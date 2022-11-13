@@ -1,16 +1,23 @@
 //External Lib Import
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { AiFillEdit, AiFillDelete } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Col, Container, Row } from "react-bootstrap";
+import ReactPaginate from "react-paginate";
 
 //Internal Lib Import
 import { RemoveTodo, ResetTodoFormValue } from "../redux/slice/TodoSlice";
 import ToastMessage from "../helper/ToastMessage";
 
 function TodoList() {
+  const [data, setData] = useState([]);
+  const [pageNumber, setPageNumber] = useState(0);
+  const itemPerPage = 5;
+  const pageCount = Math.ceil(data.length / itemPerPage);
+  const pageInit = pageNumber * itemPerPage;
+
   let { TodoList } = useSelector((state) => state.Todo);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -18,6 +25,14 @@ function TodoList() {
   useEffect(() => {
     dispatch(ResetTodoFormValue());
   }, []);
+
+  useEffect(() => {
+    setData(TodoList);
+  }, [TodoList]);
+
+  const handelPageClick = async ({ selected }) => {
+    setPageNumber(selected);
+  };
 
   const removeTodo = (id) => {
     dispatch(RemoveTodo(id));
@@ -39,8 +54,8 @@ function TodoList() {
               </tr>
             </thead>
             <tbody>
-              {TodoList.length !== 0 ? (
-                TodoList.map((todo) => {
+              {data.length !== 0 ? (
+                data.slice(pageInit, pageInit + itemPerPage).map((todo) => {
                   return (
                     <tr key={todo?._id}>
                       <td>{todo?._id}</td>
@@ -73,6 +88,31 @@ function TodoList() {
               )}
             </tbody>
           </Table>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <div className="pagination">
+            <ReactPaginate
+              previousLabel="<"
+              nextLabel=">"
+              pageClassName="page-item"
+              pageLinkClassName="page-link"
+              previousClassName="page-item"
+              previousLinkClassName="page-link"
+              nextClassName="page-item"
+              nextLinkClassName="page-link"
+              breakLabel="..."
+              breakClassName="page-item"
+              breakLinkClassName="page-link"
+              pageCount={pageCount}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={5}
+              onPageChange={handelPageClick}
+              containerClassName="pagination"
+              activeClassName="active"
+            />
+          </div>
         </Col>
       </Row>
     </Container>
